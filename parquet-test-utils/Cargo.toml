@@ -25,4 +25,7 @@ edition = "2021"
 [dependencies]
 datafusion = { path = "../datafusion/core" }
 object_store = "0.5.0"
-parquet = "30.0.1"
+
+[dependencies.parquet]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"

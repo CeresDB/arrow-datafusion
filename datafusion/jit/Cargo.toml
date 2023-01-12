@@ -36,7 +36,6 @@ path = "src/lib.rs"
 jit = []
 
 [dependencies]
-arrow = { version = "30.0.1", default-features = false }
 cranelift = "0.89.0"
 cranelift-jit = "0.89.0"
 cranelift-module = "0.89.0"
@@ -45,3 +44,8 @@ datafusion-common = { path = "../common", version = "16.0.0", features = ["jit"]
 datafusion-expr = { path = "../expr", version = "16.0.0" }
 
 parking_lot = "0.12"
+
+[dependencies.arrow]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"
+default-features = false

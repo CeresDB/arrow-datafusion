@@ -37,7 +37,6 @@ default = ["unicode_expressions"]
 unicode_expressions = []
 
 [dependencies]
-arrow = { version = "30.0.1", features = ["prettyprint"] }
 async-trait = "0.1.41"
 chrono = { version = "0.4.23", default-features = false }
 datafusion-common = { path = "../common", version = "16.0.0" }
@@ -46,6 +45,11 @@ datafusion-physical-expr = { path = "../physical-expr", version = "16.0.0" }
 hashbrown = { version = "0.13", features = ["raw"] }
 log = "^0.4"
 regex-syntax = "0.6.28"
+
+[dependencies.arrow]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"
+features = ["prettyprint"]
 
 [dev-dependencies]
 ctor = "0.1.22"

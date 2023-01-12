@@ -29,7 +29,6 @@ rust-version = "1.62"
 readme = "README.md"
 
 [dependencies]
-arrow = "30.0.1"
 clap = { version = "3", features = ["derive", "cargo"] }
 datafusion = { path = "../datafusion/core", version = "16.0.0" }
 dirs = "4.0.0"
@@ -39,3 +38,7 @@ object_store = { version = "0.5.0", features = ["aws", "gcp"] }
 rustyline = "10.0"
 tokio = { version = "1.23", features = ["macros", "rt", "rt-multi-thread", "sync", "parking_lot"] }
 url = "2.2"
+
+[dependencies.arrow]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"

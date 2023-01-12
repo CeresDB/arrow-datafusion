@@ -50,3 +50,19 @@ opt-level = 3
 overflow-checks = false
 panic = 'unwind'
 rpath = false
+
+[workspace.dependencies.arrow]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"
+
+[workspace.dependencies.arrow-buffer]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"
+
+[workspace.dependencies.arrow-schema]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"
+
+[workspace.dependencies.arrow-flight]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"

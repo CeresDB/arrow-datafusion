@@ -36,7 +36,11 @@ path = "src/lib.rs"
 
 [dependencies]
 ahash = { version = "0.8", default-features = false, features = ["runtime-rng"] }
-arrow = { version = "30.0.1", default-features = false }
 datafusion-common = { path = "../common", version = "16.0.0" }
 log = "^0.4"
 sqlparser = "0.30"
+
+[dependencies.arrow]
+git = "https://github.com/apache/arrow-rs.git"
+rev = "c28d69aa5be2cce2d065300c9a79c4063589f300"
+default-features = false
