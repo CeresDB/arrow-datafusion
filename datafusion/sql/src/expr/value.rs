@@ -24,6 +24,7 @@ use log::debug;
 use sqlparser::ast::{DateTimeField, Expr as SQLExpr, Value};
 use sqlparser::parser::ParserError::ParserError;
 use std::collections::HashSet;
+use std::num::ParseIntError;
 
 impl<'a, S: ContextProvider> SqlToRel<'a, S> {
     pub(crate) fn parse_value(
@@ -38,6 +39,12 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
             Value::Boolean(n) => Ok(lit(n)),
             Value::Placeholder(param) => {
                 Self::create_placeholder_expr(param, param_data_types)
+            }
+            Value::HexStringLiteral(s) => {
+                let bs = decode_hex(&s).map_err(|_| {
+                    DataFusionError::Plan(format!("Invalid hex string literal:{s}"))
+                })?;
+                Ok(lit(bs))
             }
             _ => Err(DataFusionError::Plan(format!(
                 "Unsupported Value '{value:?}'",
@@ -249,4 +256,11 @@ fn has_units(val: &str) -> bool {
         || val.ends_with("microseconds")
         || val.ends_with("nanosecond")
         || val.ends_with("nanoseconds")
+}
+
+fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
+    (0..s.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
+        .collect()
 }
