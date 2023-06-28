@@ -43,6 +43,12 @@ pub trait ExprSchemable {
 
     /// cast to a type with respect to a schema
     fn cast_to<S: ExprSchema>(self, cast_to_type: &DataType, schema: &S) -> Result<Expr>;
+
+    /// given a schema, return the dict id of the expr
+    fn get_dict_id<S: ExprSchema>(&self, schema: &S) -> Result<i64>;
+
+    /// given a schema, return the dict_is_ordered of the expr
+    fn dict_is_ordered<S: ExprSchema>(&self, input_schema: &S) -> Result<bool>;
 }
 
 impl ExprSchemable for Expr {
@@ -262,23 +268,58 @@ impl ExprSchemable for Expr {
         }
     }
 
+    fn dict_is_ordered<S: ExprSchema>(&self, input_schema: &S) -> Result<bool> {
+        match self {
+            // TODO Handle more types
+            Expr::Column(c) => input_schema.dict_is_ordered(c),
+            _ => Ok(false),
+        }
+    }
+
+    fn get_dict_id<S: ExprSchema>(&self, schema: &S) -> Result<i64> {
+        match self {
+            // TODO Handle more types
+            Expr::Column(c) => schema.dict_id(c),
+            _ => Ok(0),
+        }
+    }
+
     /// Returns a [arrow::datatypes::Field] compatible with this expression.
     ///
     /// So for example, a projected expression `col(c1) + col(c2)` is
     /// placed in an output field **named** col("c1 + c2")
     fn to_field(&self, input_schema: &DFSchema) -> Result<DFField> {
         match self {
-            Expr::Column(c) => Ok(DFField::new(
-                c.relation.clone(),
-                &c.name,
-                self.get_type(input_schema)?,
-                self.nullable(input_schema)?,
-            )),
-            _ => Ok(DFField::new_unqualified(
-                &self.display_name()?,
-                self.get_type(input_schema)?,
-                self.nullable(input_schema)?,
-            )),
+            Expr::Column(c) => Ok(match self.get_type(input_schema)? {
+                DataType::Dictionary(_, _) => DFField::new_dict(
+                    c.relation.clone(),
+                    &c.name,
+                    self.get_type(input_schema)?,
+                    self.nullable(input_schema)?,
+                    self.get_dict_id(input_schema)?,
+                    self.dict_is_ordered(input_schema)?,
+                ),
+                _ => DFField::new(
+                    c.relation.clone(),
+                    &c.name,
+                    self.get_type(input_schema)?,
+                    self.nullable(input_schema)?,
+                ),
+            }),
+            _ => Ok(match self.get_type(input_schema)? {
+                DataType::Dictionary(_, _) => DFField::new_unqualified_dict(
+                    &self.display_name()?,
+                    self.get_type(input_schema)?,
+                    self.nullable(input_schema)?,
+                    self.get_dict_id(input_schema)?,
+                    self.dict_is_ordered(input_schema)?,
+                ),
+                _ => DFField::new_unqualified(
+                    &self.display_name()?,
+                    self.get_type(input_schema)?,
+                    self.nullable(input_schema)?,
+                ),
+            }),
         }
     }
 
@@ -347,10 +388,57 @@ pub fn cast_subquery(subquery: Subquery, cast_to_type: &DataType) -> Result<Subq
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::{col, lit};
-    use arrow::datatypes::DataType;
+    use arrow::datatypes::{DataType, Field};
     use datafusion_common::Column;
+
+    #[test]
+    fn expr_with_dictionary_to_schema() {
+        let fields = vec![
+            Field::new_dict(
+                "dictionary_column1",
+                DataType::Dictionary(Box::new(DataType::Int32), Box::new(DataType::Utf8)),
+                false,
+                1,
+                false,
+            ),
+            Field::new_dict(
+                "dictionary_column2",
+                DataType::Dictionary(Box::new(DataType::Int32), Box::new(DataType::Utf8)),
+                false,
+                2,
+                true,
+            ),
+        ];
+        let mut dffield = vec![];
+        for i in fields {
+            dffield.push(DFField::from(i));
+        }
+        let dfschema = DFSchema::new_with_metadata(
+            dffield.clone(),
+            HashMap::<String, String>::new(),
+        )
+        .unwrap();
+        let expr = vec![col("dictionary_column1"), col("dictionary_column2")];
+        for i in 0..dffield.len() {
+            assert_eq!(expr[i].to_field(&dfschema).unwrap(), dffield[i]);
+            assert_eq!(
+                expr[i].to_field(&dfschema).unwrap().field().dict_id(),
+                dffield[i].field().dict_id()
+            );
+            assert_eq!(
+                expr[i]
+                    .to_field(&dfschema)
+                    .unwrap()
+                    .field()
+                    .dict_is_ordered(),
+                dffield[i].field().dict_is_ordered()
+            );
+        }
+    }
 
     #[test]
     fn expr_schema_nullability() {
@@ -403,6 +491,14 @@ mod tests {
 
         fn data_type(&self, _col: &Column) -> Result<&DataType> {
             Ok(&self.data_type)
+        }
+
+        fn dict_id(&self, _col: &Column) -> Result<i64> {
+            Ok(0)
+        }
+
+        fn dict_is_ordered(&self, _col: &Column) -> Result<bool> {
+            Ok(false)
         }
     }
 }
