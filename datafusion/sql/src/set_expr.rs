@@ -36,8 +36,10 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 set_quantifier,
             } => {
                 let all = match set_quantifier {
-                    SetQuantifier::All => true,
-                    SetQuantifier::Distinct | SetQuantifier::None => false,
+                    SetQuantifier::All | SetQuantifier::AllByName => true,
+                    SetQuantifier::Distinct
+                    | SetQuantifier::None
+                    | SetQuantifier::ByName => false,
                 };
 
                 let left_plan = self.set_expr_to_plan(*left, planner_context)?;

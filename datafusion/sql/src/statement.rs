@@ -248,6 +248,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 cascade,
                 restrict: _,
                 purge: _,
+                temporary: _,
             } => {
                 // We don't support cascade and purge for now.
                 // nor do we support multiple object names
@@ -430,7 +431,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 self.delete_to_plan(table_name, selection)
             }
 
-            Statement::StartTransaction { modes } => {
+            Statement::StartTransaction { modes, .. } => {
                 let isolation_level: ast::TransactionIsolationLevel = modes
                     .iter()
                     .filter_map(|m: &ast::TransactionMode| match m {
@@ -514,10 +515,10 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 "DELETE FROM only supports single table, got: joins".to_string(),
             ));
         }
-        let TableFactor::Table{name, ..} = table_factor.relation else {
+        let TableFactor::Table { name, .. } = table_factor.relation else {
             return Err(DataFusionError::NotImplemented(format!(
                 "DELETE FROM only supports single table, got: {table_factor:?}"
-            )))
+            )));
         };
 
         Ok(name)

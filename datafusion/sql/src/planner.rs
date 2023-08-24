@@ -306,20 +306,20 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
 
     fn convert_simple_data_type(&self, sql_type: &SQLDataType) -> Result<DataType> {
         match sql_type {
-            SQLDataType::Boolean => Ok(DataType::Boolean),
-            SQLDataType::TinyInt(_) => Ok(DataType::Int8),
+            SQLDataType::Boolean|SQLDataType::Bool => Ok(DataType::Boolean),
+            SQLDataType::TinyInt(_)|SQLDataType::Int2(_)|SQLDataType::Int4(_)|SQLDataType::Int8(_) => Ok(DataType::Int8),
             SQLDataType::SmallInt(_) => Ok(DataType::Int16),
             SQLDataType::Int(_) | SQLDataType::Integer(_) => Ok(DataType::Int32),
             SQLDataType::BigInt(_) => Ok(DataType::Int64),
-            SQLDataType::UnsignedTinyInt(_) => Ok(DataType::UInt8),
+            SQLDataType::UnsignedTinyInt(_)|SQLDataType::UnsignedInt2(_)|SQLDataType::UnsignedInt4(_)|SQLDataType::UnsignedInt8(_) => Ok(DataType::UInt8),
             SQLDataType::UnsignedSmallInt(_) => Ok(DataType::UInt16),
             SQLDataType::UnsignedInt(_) | SQLDataType::UnsignedInteger(_) => {
                 Ok(DataType::UInt32)
             }
             SQLDataType::UnsignedBigInt(_) => Ok(DataType::UInt64),
-            SQLDataType::Float(_) => Ok(DataType::Float32),
+            SQLDataType::Float(_)|SQLDataType::Float4 => Ok(DataType::Float32),
             SQLDataType::Real => Ok(DataType::Float32),
-            SQLDataType::Double | SQLDataType::DoublePrecision => Ok(DataType::Float64),
+            SQLDataType::Double | SQLDataType::DoublePrecision |SQLDataType::Float8=> Ok(DataType::Float64),
             SQLDataType::Char(_)
             | SQLDataType::Varchar(_)
             | SQLDataType::Text

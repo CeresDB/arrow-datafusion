@@ -60,6 +60,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                     expr,
                     substring_from: None,
                     substring_for: None,
+                    special: false,
                 };
 
                 return Err(DataFusionError::Plan(format!(

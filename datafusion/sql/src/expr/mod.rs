@@ -288,6 +288,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 expr,
                 substring_from,
                 substring_for,
+               ..
             } => self.sql_substring_to_expr(expr, substring_from, substring_for, schema, planner_context),
 
             #[cfg(not(feature = "unicode_expressions"))]
