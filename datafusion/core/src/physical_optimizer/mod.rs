@@ -31,7 +31,7 @@ pub mod limited_distinct_aggregation;
 pub mod optimizer;
 pub mod output_requirements;
 pub mod pipeline_checker;
-mod projection_pushdown;
+pub mod projection_pushdown;
 pub mod pruning;
 pub mod replace_with_order_preserving_variants;
 mod sort_pushdown;
