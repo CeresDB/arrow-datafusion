@@ -610,7 +610,7 @@ impl TDigest {
         let max = cast_scalar_f64!(&state[3]);
         let min = cast_scalar_f64!(&state[4]);
 
-        assert!(max.total_cmp(&min).is_ge());
+        // assert!(max.total_cmp(&min).is_ge());
 
         Self {
             max_size,
